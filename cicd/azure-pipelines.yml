@@ -1,0 +1,34 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    steps:
+    - script: echo "Building application..."
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+    - script: |
+        pip install -r requirements.txt
+      displayName: 'Install Dependencies'
+    - script: pytest tests/
+      displayName: 'Run Unit Tests'
+
+- stage: Deploy
+  jobs:
+  - job: DeployToAKS
+    steps:
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscriptionEndpoint: 'AzureServiceConnection'
+        azureResourceGroup: 'MedStar-RG'
+        kubernetesCluster: 'MedStarAKSCluster'
+        namespace: 'default'
+        command: 'apply'
+        arguments: '-f ../kubernetes/k8s-deployment.yaml'
