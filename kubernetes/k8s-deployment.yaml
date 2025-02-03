@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medstar-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: medstar
+  template:
+    metadata:
+      labels:
+        app: medstar
+    spec:
+      containers:
+      - name: medstar-container
+        image: medstaracr.azurecr.io/medstar-app:latest
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medstar-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: medstar
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
